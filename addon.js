@@ -1,9 +1,7 @@
 const { addonBuilder } = require("stremio-addon-sdk");
 const puppeteer = require("puppeteer-extra");
-const AdblockerPlugin = require("puppeteer-extra-plugin-adblocker");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
-puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
 puppeteer.use(StealthPlugin());
 
 // --- Addon Manifest ---
