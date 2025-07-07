@@ -1,17 +1,23 @@
 {
-	"name": "stremio-addon-StreamWeaver",
-	"version": "4.1.0",
-	"description": "Unlock the web. StreamWeaver seamlessly aggregates and resolves high-speed HTTPS links from a variety of publicly available internet sources. Experience instant playback for a vast catalog of movies and TV shows. No torrents, just direct streams woven straight into your Stremio library.",
-	"scripts": {
-		"start": "node server.js"
-	},
-	"dependencies": {
-		"cheerio": "^1.1.0",
-		"node-fetch": "^2.7.0",
-		"puppeteer": "^24.11.2",
-		"puppeteer-extra": "^3.3.6",
-		"puppeteer-extra-plugin-adblocker": "^2.13.6",
-		"puppeteer-extra-plugin-stealth": "^2.11.2",
-		"stremio-addon-sdk": "1.1.x"
-	}
+  "name": "stremio-addon-streamweaver",
+  "version": "6.0.0",
+  "description": "A Stremio addon that uses a browser engine to find streams.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "SarthakChoyal",
+  "license": "ISC",
+  "dependencies": {
+    "stremio-addon-sdk": "1.6.10",
+    "puppeteer": "22.10.0",
+    "puppeteer-extra": "3.3.6",
+    "puppeteer-extra-plugin-adblocker": "2.13.6",
+    "puppeteer-extra-plugin-stealth": "2.11.2",
+    "cheerio": "1.0.0-rc.12",
+    "node-fetch": "2.7.0"
+  },
+  "engines": {
+    "node": "18"
+  }
 }
