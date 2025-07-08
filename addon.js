@@ -59,7 +59,7 @@ async function resolveStreamWithBrowser(embedUrl) {
         console.log("5. Waiting for stream to load after click...");
         const finalResponse = await page.waitForResponse(
             response => response.url().includes('.m3u8'),
-            { timeout: 15000 }
+            { timeout: 60000 }
         );
         
         const m3u8Link = finalResponse.url();
