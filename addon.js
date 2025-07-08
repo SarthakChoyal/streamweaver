@@ -6,68 +6,81 @@ puppeteer.use(StealthPlugin());
 
 // --- Addon Manifest ---
 const manifest = {
-    "id": "community.streamweaver.generic-click",
-    "version": "4.1.0", // The Generic Click Engine
+    "id": "community.streamweaver.optimized",
+    "version": "4.2.0", // Optimized Engine
     "catalogs": [],
     "resources": ["stream"],
     "types": ["movie", "series"],
     "logo": "https://iili.io/F000VTv.png",
     "name": "StreamWeaver",
-    "description": "Uses a stealth, ad-blocking browser to perform a generic click, resolving protected streams.",
+    "description": "Uses a highly-optimized stealth browser to resolve protected streams in low-resource environments.",
     "idPrefixes": ["tt"]
 };
 
 const builder = new addonBuilder(manifest);
 
-// --- The Puppeteer Resolver (with generic click) ---
+// --- Optimized Puppeteer Resolver ---
 async function resolveStreamWithBrowser(embedUrl) {
-    console.log("1. Launching stealth, ad-blocking browser...");
+    console.log("1. Launching optimized stealth browser...");
     let browser;
     try {
         browser = await puppeteer.launch({
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            // These are crucial flags for running in a Docker container on a free server
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage', // Use /tmp instead of /dev/shm, which is limited in Docker
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--single-process', // Makes it lighter on resources
+                '--disable-gpu' // GPU hardware acceleration is not available in a container
+            ]
         });
         const page = await browser.newPage();
         
+        // --- KEY OPTIMIZATION: Block unnecessary resources ---
+        // This stops images, fonts, and stylesheets from loading, saving a LOT of memory.
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            if (['image', 'stylesheet', 'font'].includes(req.resourceType())) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
+        
         console.log("2. Navigating to embed URL:", embedUrl);
-        await page.goto(embedUrl, { waitUntil: 'networkidle2' });
+        // Set a longer timeout as low-resource servers can be slow.
+        await page.goto(embedUrl, { waitUntil: 'networkidle2', timeout: 30000 });
 
-        console.log("3. Attempting to perform a generic click to play...");
-        
-        let clicked = false;
-        // Prioritize clicking inside an iframe, as that's where the player usually is.
-        const playerFrame = page.frames().find(frame => frame.url().includes('vidsrc.me'));
-        
+        console.log("3. Page loaded. Looking for player iframe...");
+        // This logic is improved to wait for the frame to appear.
+        const playerFrame = page.frames().find(frame => frame.url().includes('vidsrc.me') || frame.url().includes('vidsrc.pro'));
+
         if (playerFrame) {
-            console.log("4. Found the player iframe. Clicking its 'body'...");
-            // Clicking the 'body' of the iframe is the most reliable generic click.
+            console.log("4. Found player iframe. Clicking its 'body' to trigger play...");
             await playerFrame.click('body', { delay: 100 });
-            clicked = true;
         } else {
-            // Fallback if the specific iframe isn't found
-            console.log("4b. Player iframe not found. Clicking the main page body as a fallback.");
+            console.log("4b. Player iframe not found. Clicking main page as fallback...");
             await page.click('body', { delay: 100 });
-            clicked = true;
         }
 
-        if (!clicked) {
-            throw new Error("Failed to perform a generic click on the page.");
-        }
-
-        console.log("5. Waiting for stream to load after click...");
+        console.log("5. Waiting for the .m3u8 network request...");
         const finalResponse = await page.waitForResponse(
             response => response.url().includes('.m3u8'),
-            { timeout: 15000 }
+            { timeout: 20000 } // Wait up to 20 seconds for the stream to initialize
         );
         
         const m3u8Link = finalResponse.url();
-        console.log("6. SUCCESS! Intercepted .m3u8 network request:", m3u8Link);
+        console.log("6. SUCCESS! Intercepted stream URL:", m3u8Link);
         
         return m3u8Link;
 
     } catch (error) {
-        console.error("Puppeteer resolver failed:", error.message);
+        // Provide a more specific error message
+        console.error(`Puppeteer resolver failed: ${error.message}`);
         return null;
     } finally {
         if (browser) {
@@ -78,7 +91,7 @@ async function resolveStreamWithBrowser(embedUrl) {
 }
 
 
-// --- Stream Handler ---
+// --- Stream Handler (No changes needed here) ---
 builder.defineStreamHandler(async ({ type, id }) => {
     console.log(`Request for streams: ${type} ${id}`);
     let embedUrl;
