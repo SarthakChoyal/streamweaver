@@ -12,6 +12,7 @@ const manifest = {
     "resources": ["stream"],
     "types": ["movie", "series"],
     "logo": "https://iili.io/F000VTv.png",
+    "background": "https://images.unsplash.com/photo-1460355976672-71c3f0a4bdac?q=80&w=1469&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     "name": "StreamWeaver",
     "description": "Uses a highly-optimized stealth browser to resolve protected streams in low-resource environments.",
     "idPrefixes": ["tt"]
